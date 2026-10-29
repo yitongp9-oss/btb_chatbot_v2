@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BTB Student Assistant — IIMT3672 Part II</title>
+<style>
+  :root { color-scheme: light dark; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: #f6f7f9; color: #1c1e21;
+  }
+  @media (prefers-color-scheme: dark) {
+    body { background: #16181c; color: #e8eaed; }
+    .card { background: #1f2227 !important; box-shadow: 0 2px 16px rgba(0,0,0,.5) !important; }
+  }
+  .card {
+    background: #fff; max-width: 560px; width: calc(100% - 32px);
+    margin: 24px 16px; padding: 32px 28px; border-radius: 14px;
+    box-shadow: 0 2px 16px rgba(0,0,0,.08);
+  }
+  h1 { font-size: 22px; margin: 0 0 6px; }
+  .sub { font-size: 14px; opacity: .65; margin: 0 0 18px; }
+  p  { font-size: 15px; line-height: 1.55; margin: 10px 0; }
+  .hint {
+    margin-top: 20px; padding: 12px 14px; border-radius: 10px;
+    background: rgba(59,91,219,.08); font-size: 14px; line-height: 1.5;
+  }
+  .dot {
+    display: inline-block; width: 9px; height: 9px; border-radius: 50%;
+    background: #34c759; margin-right: 6px; vertical-align: 1px;
+  }
+</style>
+</head>
+<body>
+  <main class="card">
+    <h1>BTB Student Assistant</h1>
+    <p class="sub">Beat The Bot (BTB) &middot; IIMT3672 Designing Generative AI Applications &middot; Assignment Part II</p>
+    <p>This chatbot accompanies a student working through the BTB classroom session.
+       It explains platform features, privacy notices, results, and the concepts behind
+       the exercises — and it holds the helping-versus-doing line: it will guide and
+       teach, but it will not do an exercise for the student.</p>
+    <div class="hint">
+      <span class="dot"></span><strong>To start chatting:</strong> click the chat bubble
+      in the bottom-right corner of this page. No account or login is needed.
+    </div>
+  </main>
+
+  <!-- Coze Chat SDK installation code (from Coze Publish → Chat SDK). The PAT below
+       is a scoped, expiring personal access token limited to this bot's chat permission. -->
+  <script src="https://sf-cdn.coze.com/obj/unpkg-va/flow-platform/chat-app-sdk/1.2.0-beta.9/libs/oversea/index.js"></script>
+  <script>
+    new CozeWebSDK.WebChatClient({
+      config: {
+        bot_id: '7701277228861358085',
+      },
+      componentProps: {
+        title: 'BTB Student Assistant',
+      },
+      auth: {
+        type: 'token',
+        token: 'PAT_PLACEHOLDER',
+        onRefreshToken: function () {
+          return 'PAT_PLACEHOLDER';
+        }
+      }
+    });
+  </script>
+</body>
+</html>
