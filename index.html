@@ -5,69 +5,230 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>BTB Student Assistant — IIMT3672 Part II</title>
 <style>
-  :root { color-scheme: light dark; }
+  :root { color-scheme: light dark; --accent:#3b5bdb; --accent-soft:rgba(59,91,219,.08); }
   * { box-sizing: border-box; }
+  html, body { height: 100%; }
   body {
-    margin: 0; min-height: 100vh;
-    display: flex; align-items: center; justify-content: center;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    background: #f6f7f9; color: #1c1e21;
+    margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: #f6f7f9; color: #1c1e21; display: flex; justify-content: center;
   }
   @media (prefers-color-scheme: dark) {
     body { background: #16181c; color: #e8eaed; }
-    .card { background: #1f2227 !important; box-shadow: 0 2px 16px rgba(0,0,0,.5) !important; }
+    .app { background: #1f2227 !important; }
+    .msg.bot { background: #2a2e34 !important; }
+    #input { background: #262a30 !important; color: #e8eaed !important; border-color: #3a3f46 !important; }
   }
-  .card {
-    background: #fff; max-width: 560px; width: calc(100% - 32px);
-    margin: 24px 16px; padding: 32px 28px; border-radius: 14px;
-    box-shadow: 0 2px 16px rgba(0,0,0,.08);
+  .app {
+    background: #fff; width: 100%; max-width: 760px; display: flex; flex-direction: column;
+    min-height: 100dvh;
   }
-  h1 { font-size: 22px; margin: 0 0 6px; }
-  .sub { font-size: 14px; opacity: .65; margin: 0 0 18px; }
-  p  { font-size: 15px; line-height: 1.55; margin: 10px 0; }
-  .hint {
-    margin-top: 20px; padding: 12px 14px; border-radius: 10px;
-    background: rgba(59,91,219,.08); font-size: 14px; line-height: 1.5;
+  header { padding: 18px 20px 12px; border-bottom: 1px solid rgba(0,0,0,.07); }
+  header h1 { font-size: 19px; margin: 0 0 2px; }
+  header .sub { font-size: 13px; opacity: .6; margin: 0; line-height: 1.45; }
+  #banner {
+    display: none; margin: 10px 20px 0; padding: 10px 14px; border-radius: 10px;
+    background: rgba(214,69,69,.1); color: #b3261e; font-size: 14px; line-height: 1.45;
   }
-  .dot {
-    display: inline-block; width: 9px; height: 9px; border-radius: 50%;
-    background: #34c759; margin-right: 6px; vertical-align: 1px;
-  }
+  #banner.setup { background: var(--accent-soft); color: var(--accent); }
+  #chat { flex: 1; overflow-y: auto; padding: 16px 20px; display: flex; flex-direction: column; gap: 10px; }
+  .msg { max-width: 82%; padding: 10px 14px; border-radius: 14px; font-size: 15px; line-height: 1.55;
+         white-space: pre-wrap; word-break: break-word; }
+  .msg.user { align-self: flex-end; background: var(--accent); color: #fff; border-bottom-right-radius: 4px; }
+  .msg.bot  { align-self: flex-start; background: #eef0f4; border-bottom-left-radius: 4px; }
+  .msg.bot.error { background: rgba(214,69,69,.1); color: #b3261e; }
+  .chips { align-self: flex-start; display: flex; flex-wrap: wrap; gap: 6px; max-width: 82%; }
+  .chip { border: 1px solid rgba(59,91,219,.4); color: var(--accent); background: transparent;
+          border-radius: 999px; padding: 5px 12px; font-size: 13px; cursor: pointer; text-align: left; }
+  .hint { align-self: center; font-size: 13px; opacity: .55; text-align: center; padding: 6px 12px; }
+  form { display: flex; gap: 8px; padding: 12px 20px calc(14px + env(safe-area-inset-bottom));
+         border-top: 1px solid rgba(0,0,0,.07); }
+  #input { flex: 1; border: 1px solid #d7dae0; border-radius: 12px; padding: 11px 14px;
+           font-size: 15px; font-family: inherit; background: #fff; color: #1c1e21; outline: none; }
+  #input:focus { border-color: var(--accent); }
+  button.send { border: 0; background: var(--accent); color: #fff; border-radius: 12px;
+                padding: 0 18px; font-size: 15px; cursor: pointer; }
+  button.send:disabled { opacity: .5; cursor: default; }
+  .dot-flash::after { content: "…"; animation: blink 1.2s infinite; }
+  @keyframes blink { 50% { opacity: .2; } }
+  footer { text-align: center; font-size: 12px; opacity: .45; padding: 0 0 10px; }
 </style>
 </head>
 <body>
-  <main class="card">
+<div class="app">
+  <header>
     <h1>BTB Student Assistant</h1>
-    <p class="sub">Beat The Bot (BTB) &middot; IIMT3672 Designing Generative AI Applications &middot; Assignment Part II</p>
-    <p>This chatbot accompanies a student working through the BTB classroom session.
-       It explains platform features, privacy notices, results, and the concepts behind
-       the exercises — and it holds the helping-versus-doing line: it will guide and
-       teach, but it will not do an exercise for the student.</p>
-    <div class="hint">
-      <span class="dot"></span><strong>To start chatting:</strong> click the chat bubble
-      in the bottom-right corner of this page. No account or login is needed.
-    </div>
-  </main>
+    <p class="sub">Beat The Bot (BTB) &middot; IIMT3672 Designing Generative AI Applications &middot; Part II.
+       Guides a student through the BTB session — explains features, privacy, results and concepts,
+       and holds the helping-versus-doing line. No account needed.</p>
+  </header>
 
-  <!-- Coze Chat SDK installation code (from Coze Publish → Chat SDK). The PAT below
-       is a scoped, expiring personal access token limited to this bot's chat permission. -->
-  <script src="https://sf-cdn.coze.com/obj/unpkg-va/flow-platform/chat-app-sdk/1.2.0-beta.9/libs/oversea/index.js"></script>
-  <script>
-    new CozeWebSDK.WebChatClient({
-      config: {
-        bot_id: '7701277228861358085',
-      },
-      componentProps: {
-        title: 'BTB Student Assistant',
-      },
-      auth: {
-        type: 'token',
-        token: 'pat_bwmfavoZecBQOZEeFa7QFn07HJCyjsydGuSYL8MsqAkx6nJN4YdNijxFxTlTuesW',
-        onRefreshToken: function () {
-          return 'pat_bwmfavoZecBQOZEeFa7QFn07HJCyjsydGuSYL8MsqAkx6nJN4YdNijxFxTlTuesW';
+  <div id="banner"></div>
+  <div id="chat" aria-live="polite">
+    <div class="hint">Ask anything about the BTB session — account, interface, privacy, results, or the ideas behind the exercises.</div>
+  </div>
+
+  <form id="form">
+    <input id="input" type="text" autocomplete="off" placeholder="Type a message…" aria-label="Message">
+    <button class="send" type="submit" id="sendBtn">Send</button>
+  </form>
+  <footer>Powered by Coze &middot; AI-generated content for reference only</footer>
+</div>
+
+<script>
+// ─── Configuration ────────────────────────────────────────────────────────────
+// Paste your Coze Personal Access Token between the quotes below (the whole
+// pat_... string). This is the ONLY place it needs to go.
+const COZE_PAT = 'pat_bwmfavoZecBQOZEeFa7QFn07HJCyjsydGuSYL8MsqAkx6nJN4YdNijxFxTlTuesW';
+const BOT_ID   = '7701277228861358085';
+const API_URL  = 'https://api.coze.com/v3/chat';
+// ─────────────────────────────────────────────────────────────────────────────
+
+const chat    = document.getElementById('chat');
+const form    = document.getElementById('form');
+const input   = document.getElementById('input');
+const sendBtn = document.getElementById('sendBtn');
+const banner  = document.getElementById('banner');
+
+const history = [];   // {role, content} pairs sent back for multi-turn context
+let busy = false;
+
+function showBanner(text, isSetup) {
+  banner.textContent = text;
+  banner.className = isSetup ? 'setup' : '';
+  banner.id = 'banner';
+  banner.style.display = 'block';
+}
+function hideBanner() { banner.style.display = 'none'; }
+
+function addMsg(role, text, cls) {
+  const div = document.createElement('div');
+  div.className = 'msg ' + (cls || role);
+  div.textContent = text;
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+  return div;
+}
+
+function addChips(suggestions) {
+  if (!suggestions.length) return;
+  const wrap = document.createElement('div');
+  wrap.className = 'chips';
+  suggestions.slice(0, 3).forEach(s => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'chip'; b.textContent = s;
+    b.addEventListener('click', () => { if (!busy) { input.value = s; form.requestSubmit(); } });
+    wrap.appendChild(b);
+  });
+  chat.appendChild(wrap);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function anonId() {
+  try {
+    let id = sessionStorage.getItem('btb_uid');
+    if (!id) { id = 'web-' + Math.random().toString(36).slice(2, 12); sessionStorage.setItem('btb_uid', id); }
+    return id;
+  } catch (e) { return 'web-anon'; }
+}
+
+if (COZE_PAT === 'PASTE_YOUR_PAT_HERE') {
+  showBanner('Setup: the access token has not been added yet. Edit this file and paste the pat_… token into the COZE_PAT line at the top of the script.', true);
+}
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const text = input.value.trim();
+  if (!text || busy) return;
+  if (COZE_PAT === 'PASTE_YOUR_PAT_HERE') { showBanner('Setup: the access token is missing — see the note above.', true); return; }
+
+  hideBanner();
+  addMsg('user', text);
+  history.push({ role: 'user', content: text });
+  input.value = '';
+  busy = true; sendBtn.disabled = true;
+
+  const typing = addMsg('bot', '', 'bot');
+  typing.classList.add('dot-flash');
+  typing.textContent = '';
+
+  try {
+    const resp = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + COZE_PAT, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        bot_id: BOT_ID,
+        user_id: anonId(),
+        stream: true,
+        auto_save_history: true,
+        additional_messages: history.slice(-12)
+      })
+    });
+
+    if (!resp.ok) {
+      let msg = 'HTTP ' + resp.status;
+      try { const j = await resp.json(); if (j && j.msg) msg = j.msg + ' (code ' + j.code + ')'; } catch (_) {}
+      if (resp.status === 401) msg = 'The access token is invalid or expired — regenerate it in Coze and paste it into this file.';
+      throw new Error(msg);
+    }
+
+    const reader = resp.body.getReader();
+    const dec = new TextDecoder();
+    let buf = '', answer = '', started = false;
+    const follows = [];
+
+    const ensureText = () => {
+      if (!started) { started = true; typing.classList.remove('dot-flash'); }
+      return typing;
+    };
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buf += dec.decode(value, { stream: true });
+      let idx;
+      while ((idx = buf.indexOf('\n\n')) !== -1) {
+        const raw = buf.slice(0, idx); buf = buf.slice(idx + 2);
+        let event = '', data = '';
+        for (const line of raw.split('\n')) {
+          if (line.startsWith('event:')) event = line.slice(6).trim();
+          else if (line.startsWith('data:')) data += line.slice(5).trim();
+        }
+        if (!data) continue;
+        let payload; try { payload = JSON.parse(data); } catch (_) { continue; }
+
+        if (event === 'conversation.message.delta' && payload.type === 'answer') {
+          answer += payload.content || '';
+          ensureText().textContent = answer;
+          chat.scrollTop = chat.scrollHeight;
+        } else if (event === 'conversation.message.completed') {
+          if (payload.type === 'follow_up' && payload.content) follows.push(payload.content);
+        } else if (event === 'conversation.chat.failed') {
+          const le = (payload && payload.last_error) || {};
+          throw new Error('The bot could not reply: ' + (le.msg || 'unknown error') + ' (code ' + (le.code || '?') + ')');
         }
       }
-    });
-  </script>
+    }
+
+    if (!started) { typing.classList.remove('dot-flash'); typing.textContent = '(empty reply)'; }
+    else if (!answer.trim()) { typing.textContent = '(the reply contained no text)'; }
+    history.push({ role: 'assistant', content: answer });
+    addChips(follows);
+
+  } catch (err) {
+    typing.classList.remove('dot-flash');
+    typing.classList.add('error');
+    typing.textContent = 'Something went wrong: ' + err.message + ' — press Retry or send again.';
+    const retry = document.createElement('button');
+    retry.type = 'button'; retry.className = 'chip'; retry.textContent = 'Retry';
+    retry.style.marginLeft = '6px';
+    retry.addEventListener('click', () => { input.value = text; form.requestSubmit(); });
+    typing.appendChild(document.createElement('br'));
+    typing.appendChild(retry);
+  } finally {
+    busy = false; sendBtn.disabled = false;
+    chat.scrollTop = chat.scrollHeight;
+  }
+});
+</script>
 </body>
 </html>
